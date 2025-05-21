@@ -11,19 +11,38 @@ class FeedViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        setupView()
+        setupNavigation()
     
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    private func setupView () {
+        view.backgroundColor = .systemBackground
+        
+        let showPostButton = UIButton(type: .system)
+        showPostButton.setTitle("Показать пост", for: .normal)
+        showPostButton.addTarget(self, action: #selector(showPost), for: .touchUpInside)
+        
+        showPostButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(showPostButton)
+        
+        NSLayoutConstraint.activate([
+            showPostButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            showPostButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
     }
-    */
+    
+    private func setupNavigation() {
+        title = "Лента"
+    }
+    
+    @objc private func showPost() {
+        let postVC = PostViewController()
+        
+        navigationController?.pushViewController(postVC, animated: true)
+        
+
+    }
 
 }

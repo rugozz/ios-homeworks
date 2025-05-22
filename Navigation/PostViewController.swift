@@ -14,9 +14,10 @@ class PostViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         guard post != nil else {
-            fatalError("Post must be set before showing this view controller")
+            fatalError("Post not set")
                 }
         setupView()
+        setupNavigationBar()
         }
     
     private func setupView() {
@@ -38,8 +39,19 @@ class PostViewController: UIViewController {
             label.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
     }
-        
+    private func setupNavigationBar() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "info.circle"),
+                                                            style: .plain,
+                                                            target: self,
+                                                            action: #selector(showInfo))
     }
+    
+    @objc private func showInfo() {
+        let infoVC = InfoViewController()
+        let navController = UINavigationController(rootViewController: infoVC)
+        present(navController, animated: true)
+    }
+}
     
 
 

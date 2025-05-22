@@ -19,11 +19,15 @@ class FeedViewController: UIViewController {
     }
     
     private func setupView () {
+        
         view.backgroundColor = .systemBackground
         
         let showPostButton = UIButton(type: .system)
-        showPostButton.setTitle("Показать пост", for: .normal)
-        showPostButton.addTarget(self, action: #selector(showPost), for: .touchUpInside)
+        showPostButton.setTitle("Показать пост",
+                                for: .normal)
+        showPostButton.addTarget(self,
+                                 action: #selector(showPost),
+                                 for: .touchUpInside)
         
         showPostButton.translatesAutoresizingMaskIntoConstraints = false
         
@@ -48,7 +52,6 @@ class FeedViewController: UIViewController {
         
         navigationController?.pushViewController(postVC, animated: true)
         
-
     }
 
 }

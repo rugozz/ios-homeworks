@@ -25,7 +25,10 @@ class InfoViewController: UIViewController {
     private func setupButton() {
         let button = UIButton(type: .system)
         button.setTitle("Показать предупреждение", for: .normal)
-        button.addTarget(self, action: #selector(showAlert), for: .touchUpInside)
+        button.addTarget(self,
+                         action: #selector(showAlert),
+                         for: .touchUpInside)
+        
         button.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(button)
@@ -38,16 +41,19 @@ class InfoViewController: UIViewController {
     
     @objc private func showAlert() {
         let alert = UIAlertController(
-            title: "Внимание!", message: "Вы уверены?", preferredStyle: .alert
-        )
+            title: "Внимание!",
+            message: "Вы уверены?",
+            preferredStyle: .alert)
         
-        let yesAction = UIAlertAction(title: "Да", style: .default) { _ in
+        let yesAction = UIAlertAction(title: "Да",
+                                      style: .default) { _ in
             print("Пользователь нажал 'да'")
-        }
+                }
         
-        let noAction = UIAlertAction(title: "Нет", style: .cancel) { _ in
+        let noAction = UIAlertAction(title: "Нет",
+                                     style: .cancel) { _ in
             print("Пользователь нажал 'нет'")
-        }
+                }
         
         alert.addAction(yesAction)
         alert.addAction(noAction)

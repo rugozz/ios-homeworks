@@ -8,7 +8,9 @@
 import UIKit
 
 class FeedViewController: UIViewController {
-
+    
+    private let demoPost = Post(title: "Мой первый пост")
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
@@ -39,6 +41,10 @@ class FeedViewController: UIViewController {
     
     @objc private func showPost() {
         let postVC = PostViewController()
+        postVC.post = demoPost
+        
+        
+        
         
         navigationController?.pushViewController(postVC, animated: true)
         

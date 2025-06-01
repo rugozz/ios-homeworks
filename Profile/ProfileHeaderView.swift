@@ -29,40 +29,47 @@ final class ProfileHeaderView: UIView {
         imageView.layer.borderColor = UIColor.white.cgColor
         return imageView
     }()
-    private let showStatusButton = UIButton(type: .system)
     
-    private func setupButton() {
-        
-        showStatusButton.setTitle("Show status", for: .normal)
-        showStatusButton.setTitleColor(.white, for: .normal)
-        showStatusButton.layer.cornerRadius = 4
-        showStatusButton.layer.shadowOffset = CGSize(width: 4, height: 4)
-        showStatusButton.layer.shadowRadius = 4
-        showStatusButton.layer.shadowColor = UIColor.black.cgColor
-        showStatusButton.layer.shadowOpacity = 0.7
-        showStatusButton.addTarget(self, action: #selector(buttonPressed), for: .touchUpInside)
-        showStatusButton.backgroundColor = .systemBlue
-        showStatusButton.translatesAutoresizingMaskIntoConstraints = false
-        
-    }
+    private let showStatusButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Show status", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 4
+        button.layer.shadowOffset = CGSize(width: 4, height: 4)
+        button.layer.shadowRadius = 4
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.7
+        button.backgroundColor = .systemBlue
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
-    private let status: UILabel = {
+    private let statusLabel: UILabel = {
         let label = UILabel()
         label.text = "Waiting for something..."
-        label.textAlignment = .center
+        label.textAlignment = .left
         label.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         label.textColor = .systemGray
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
   
+    private let statusTextField: UITextField = {
+        
+        let textField = UITextField()
+        textField.placeholder = "Enter new status"
+        textField.font = UIFont.systemFont(ofSize: 15)
+        textField.textAlignment = .left
+        textField.layer.cornerRadius = 12
+        textField.backgroundColor = .white
+        textField.textColor = .black
+        textField.layer.borderWidth = 1
+        textField.layer.borderColor = UIColor.black.cgColor
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        return textField
+    }()
     
-    
-    private var currentStatus: String = "Мой текущий статус"
-    
-    @objc private func buttonPressed() {
-        print("Текущий статус:", currentStatus)
-    }
+    private var statusText: String = ""
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -73,23 +80,33 @@ final class ProfileHeaderView: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         profileImage.layer.cornerRadius = profileImage.frame.width / 2
     }
+    
     private func setupView() {
         
-        addSubview(status)
         addSubview(profileImage)
         addSubview(titleLabel)
+        addSubview(statusLabel)
+        addSubview(statusTextField)
         addSubview(showStatusButton)
 
-        setupButton()
-        
+        setupButtonAction()
         setupConstraints()
     }
-
+    
+    private func setupButtonAction() {
+        showStatusButton.addTarget(self,
+                                   action: #selector(buttonPressed),
+                                   for: .touchUpInside)
+        
+        statusTextField.addTarget(self,
+                                  action: #selector(statusTextChanged(_:)),
+                                  for: .editingChanged)
+    }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
@@ -105,15 +122,38 @@ final class ProfileHeaderView: UIView {
             titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             titleLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -20),
             
+            //Button
             showStatusButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             showStatusButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            showStatusButton.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 16),
+            showStatusButton.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: 26),
             showStatusButton.heightAnchor.constraint(equalToConstant: 50),
+            
             //Status
-            status.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 70),
-            status.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            status.bottomAnchor.constraint(equalTo: showStatusButton.topAnchor, constant: -34)
+            statusLabel.leadingAnchor.constraint(equalTo: profileImage.trailingAnchor, constant: 35),
+            statusLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            statusLabel.bottomAnchor.constraint(equalTo: showStatusButton.topAnchor, constant: -34),
+            
+            //Status TextField
+            statusTextField.leadingAnchor.constraint(equalTo: statusLabel.leadingAnchor),
+            statusTextField.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
+            statusTextField.bottomAnchor.constraint(equalTo: showStatusButton.topAnchor),
+            statusTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            statusTextField.heightAnchor.constraint(equalToConstant: 40),
             
         ])
     }
+    
+
+    
+    @objc private func buttonPressed() {
+        statusLabel.text = statusText.isEmpty ? "No status" : statusText
+        statusTextField.text = ""
+        statusText = ""
+        statusTextField.resignFirstResponder()
+    }
+    
+    @objc private func statusTextChanged(_ textField: UITextField) {
+        statusText = textField.text ?? ""
+    }
+    
 }

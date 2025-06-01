@@ -17,15 +17,12 @@ final class ProfileViewController: UIViewController {
         setupView()
     }
     
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        
-        profileHeaderView.frame = view.bounds
-    }
-    
+
     // MARK: - Setup
     private func setupView() {
-        view.backgroundColor = .lightGray
+        view.backgroundColor = .white
+        
+        profileHeaderView.backgroundColor = .lightGray
         title = "Profile"
         
         view.addSubview(profileHeaderView)
@@ -35,7 +32,8 @@ final class ProfileViewController: UIViewController {
             profileHeaderView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             profileHeaderView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             profileHeaderView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            profileHeaderView.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor)
+            profileHeaderView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+
         ])
     }
 }

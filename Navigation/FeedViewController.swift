@@ -11,6 +11,8 @@ class FeedViewController: UIViewController {
     
     private let demoPost = Post(title: "Мой первый пост")
     
+    private let stackView = UIStackView()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
@@ -19,24 +21,33 @@ class FeedViewController: UIViewController {
     }
     
     private func setupView () {
-        
         view.backgroundColor = .systemBackground
         
-        let showPostButton = UIButton(type: .system)
-        showPostButton.setTitle("Показать пост",
-                                for: .normal)
-        showPostButton.addTarget(self,
-                                 action: #selector(showPost),
-                                 for: .touchUpInside)
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(stackView)
         
-        showPostButton.translatesAutoresizingMaskIntoConstraints = false
+        let firstButton = createButton(title: "Кнопка 1")
+        let secondButton = createButton(title: "Кнопка 2")
         
-        view.addSubview(showPostButton)
+        stackView.addArrangedSubview(firstButton)
+        stackView.addArrangedSubview(secondButton)
         
+        // Констрейнты для StackView
         NSLayoutConstraint.activate([
-            showPostButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            showPostButton.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
+        
+
+    }
+    private func createButton(title: String) -> UIButton {
+        let button = UIButton(type: .system)
+        button.setTitle(title, for: .normal)
+        button.addTarget(self, action: #selector(showPost), for: .touchUpInside)
+        return button
     }
     
     private func setupNavigation() {
@@ -46,10 +57,7 @@ class FeedViewController: UIViewController {
     @objc private func showPost() {
         let postVC = PostViewController()
         postVC.post = demoPost
-        
-        
-        
-        
+    
         navigationController?.pushViewController(postVC, animated: true)
         
     }

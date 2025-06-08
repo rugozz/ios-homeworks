@@ -31,10 +31,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tag: 0)
         
         
-        let profileViewController = ProfileViewController()
-        profileViewController.title = "Профиль"
+        //let profileViewController = ProfileViewController()
+        //profileViewController.title = "Профиль"
+        let loginViewController = LogInViewController()
         
-        let profileNavController = UINavigationController(rootViewController: profileViewController)
+        let profileNavController = UINavigationController(rootViewController: loginViewController)
         
         profileNavController.tabBarItem = UITabBarItem(title: "Профиль",
                                                        image: UIImage(systemName: "person"),

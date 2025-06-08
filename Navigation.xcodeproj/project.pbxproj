@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B42C4C192DF364D500F0D37C /* LogInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42C4C182DF364D500F0D37C /* LogInViewController.swift */; };
 		B44199C02DE77A5900053404 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44199BF2DE77A5900053404 /* ProfileHeaderView.swift */; };
 		B44199C22DE77AC900053404 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44199C12DE77AC900053404 /* ProfileViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B42C4C182DF364D500F0D37C /* LogInViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogInViewController.swift; sourceTree = "<group>"; };
 		B44199BF2DE77A5900053404 /* ProfileHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
 		B44199C12DE77AC900053404 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		B449A42D2DDCF8C4009FC9AD /* Navigation.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Navigation.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -54,6 +56,7 @@
 			children = (
 				B44199BF2DE77A5900053404 /* ProfileHeaderView.swift */,
 				B44199C12DE77AC900053404 /* ProfileViewController.swift */,
+				B42C4C182DF364D500F0D37C /* LogInViewController.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -150,6 +153,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B44199C22DE77AC900053404 /* ProfileViewController.swift in Sources */,
+				B42C4C192DF364D500F0D37C /* LogInViewController.swift in Sources */,
 				B44199C02DE77A5900053404 /* ProfileHeaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

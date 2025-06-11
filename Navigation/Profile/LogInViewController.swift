@@ -172,13 +172,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         // MARK: - Actions
         
         @objc func willShowKeyboard(_ notification: NSNotification) {
-            let keyboardHeight = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue.height
-            scrollView.contentInset.bottom += keyboardHeight ?? 0.0
+            guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+                    let keyboardHeight = keyboardFrame.cgRectValue.height
+                    scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+                    scrollView.verticalScrollIndicatorInsets = scrollView.contentInset
             
         }
         
         @objc func willHideKeyboard(_ notification: NSNotification) {
-            scrollView.contentInset.bottom = 0.0
+            scrollView.contentInset = .zero
+            scrollView.verticalScrollIndicatorInsets = .zero
         }
     
     private func setupConstraints() {

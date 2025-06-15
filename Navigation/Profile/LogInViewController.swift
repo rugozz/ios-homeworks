@@ -33,7 +33,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         return view
         
     }()
-    
+
     private let logoImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(named: "Logo")
@@ -67,15 +67,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         return textField
     }()
     
-    private let enterView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.layer.borderColor = UIColor.lightGray.cgColor
-        view.layer.borderWidth = 0.5
-        view.layer.cornerRadius = 10
-        view.backgroundColor = .systemGray6
-        return view
-    }()
     
     private let enterView2: UIView = {
         let view = UIView()
@@ -84,6 +75,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         view.layer.borderWidth = 0.5
         return view
     }()
+    
     private let loginButton: UIButton = {
         let button = UIButton(type: .custom)
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -94,6 +86,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         button.clipsToBounds = true
         return button
         
+    }()
+    
+    private let stackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.layer.borderColor = UIColor.lightGray.cgColor
+        stackView.layer.borderWidth = 0.5
+        stackView.layer.cornerRadius = 10
+        stackView.backgroundColor = .systemGray6
+        return stackView
     }()
     
     override func viewDidLoad() {
@@ -149,10 +151,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         scrollView.addSubview(contentView)
         contentView.addSubview(logoImageView)
         contentView.addSubview(loginButton)
-        contentView.addSubview(enterView)
+        contentView.addSubview(stackView)
         contentView.addSubview(enterView2)
-        enterView.addSubview(loginTextField)
-        enterView.addSubview(passwordTextField)
+        
+        stackView.axis = .vertical
+        stackView.spacing = 0
+        stackView.alignment = .leading
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.addArrangedSubview(loginTextField)
+        stackView.addArrangedSubview(passwordTextField)
 
 
     }
@@ -210,10 +217,14 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             logoImageView.widthAnchor.constraint(equalToConstant: 100),
             logoImageView.heightAnchor.constraint(equalToConstant: 100),
             
+            stackView.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 120),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            stackView.heightAnchor.constraint(equalToConstant: 100),
             // Поле логина
             loginTextField.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 120),
-            loginTextField.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            loginTextField.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            loginTextField.leadingAnchor.constraint(equalTo: stackView.leadingAnchor, constant: 16),
+            loginTextField.trailingAnchor.constraint(equalTo: stackView.trailingAnchor, constant: -16),
             loginTextField.heightAnchor.constraint(equalToConstant: 50),
             
             // Поле пароля
@@ -222,21 +233,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             passwordTextField.trailingAnchor.constraint(equalTo: loginTextField.trailingAnchor),
             passwordTextField.heightAnchor.constraint(equalToConstant: 50),
             
-            enterView.topAnchor.constraint(equalTo: loginTextField.topAnchor),
-            enterView.leadingAnchor.constraint(equalTo: loginTextField.leadingAnchor),
-            enterView.trailingAnchor.constraint(equalTo: loginTextField.trailingAnchor),
-            enterView.bottomAnchor.constraint(equalTo: passwordTextField.bottomAnchor),
-            
-            enterView2.topAnchor.constraint(equalTo: loginTextField.bottomAnchor),
-            enterView2.leadingAnchor.constraint(equalTo: loginTextField.leadingAnchor),
-            enterView2.trailingAnchor.constraint(equalTo: loginTextField.trailingAnchor),
-            enterView2.bottomAnchor.constraint(equalTo: passwordTextField.topAnchor),
+            // Разделение между логином и паролем
+            enterView2.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 50),
+            enterView2.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            enterView2.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
             enterView2.heightAnchor.constraint(equalToConstant: 0.5),
-
+            
             // Кнопка входа
-            loginButton.topAnchor.constraint(equalTo: passwordTextField.bottomAnchor, constant: 16),
-            loginButton.leadingAnchor.constraint(equalTo: loginTextField.leadingAnchor),
-            loginButton.trailingAnchor.constraint(equalTo: loginTextField.trailingAnchor),
+            loginButton.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 16),
+            loginButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            loginButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
             loginButton.heightAnchor.constraint(equalToConstant: 50),
             loginButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])

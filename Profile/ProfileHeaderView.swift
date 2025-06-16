@@ -125,18 +125,17 @@ final class ProfileHeaderView: UIView {
             //Button
             setStatusButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             setStatusButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            setStatusButton.topAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: 26),
+            setStatusButton.topAnchor.constraint(equalTo: statusTextField.bottomAnchor, constant: 6),
             setStatusButton.heightAnchor.constraint(equalToConstant: 50),
             
             //Status
             statusLabel.leadingAnchor.constraint(equalTo: avatarImageView.trailingAnchor, constant: 35),
             statusLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            statusLabel.bottomAnchor.constraint(equalTo: setStatusButton.topAnchor, constant: -34),
+            statusLabel.topAnchor.constraint(equalTo: fullNameLabel.bottomAnchor, constant: 34),
             
             //Status TextField
             statusTextField.leadingAnchor.constraint(equalTo: statusLabel.leadingAnchor),
             statusTextField.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
-            statusTextField.bottomAnchor.constraint(equalTo: setStatusButton.topAnchor),
             statusTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             statusTextField.heightAnchor.constraint(equalToConstant: 40),
             

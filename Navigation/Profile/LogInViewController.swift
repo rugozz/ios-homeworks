@@ -100,7 +100,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.navigationBar.isHidden = true
+
         
         setupView()
         setupConstraints()
@@ -137,7 +137,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
 
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
     }
-        
+    
+
     @objc private func loginButtonTapped() {
         let profileVC = ProfileViewController()
         navigationController?.pushViewController(profileVC, animated: true)
@@ -166,7 +167,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
     override func viewWillAppear(_ animated: Bool) {
             super.viewWillAppear(animated)
-            
+            navigationController?.setNavigationBarHidden(true, animated: animated)
             setupKeyboardObservers()
         }
         

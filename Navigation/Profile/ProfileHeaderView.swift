@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol ProfileHeaderViewDelegate: AnyObject {
+    func didTapAvatar(_ avatarImageView: UIImageView)
+}
+
 final class ProfileHeaderView: UIView {
     
     private let fullNameLabel: UILabel = {
@@ -71,10 +75,12 @@ final class ProfileHeaderView: UIView {
     
     private var statusText: String = ""
     
+    weak var delegate: ProfileHeaderViewDelegate?
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupView()
-
+        setupGestureRecognizers()
     }
 
     required init?(coder: NSCoder) {
@@ -83,11 +89,10 @@ final class ProfileHeaderView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
+            avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
     }
     
     private func setupView() {
-        
         addSubview(avatarImageView)
         addSubview(fullNameLabel)
         addSubview(statusLabel)
@@ -96,6 +101,17 @@ final class ProfileHeaderView: UIView {
 
         setupButtonAction()
         setupConstraints()
+        setupAvatarTap()
+    }
+    
+    private func setupAvatarTap() {
+        avatarImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(avatarTapped))
+        avatarImageView.addGestureRecognizer(tap)
+    }
+    
+    @objc private func avatarTapped() {
+        delegate?.didTapAvatar(avatarImageView)
     }
     
     private func setupButtonAction() {
@@ -110,7 +126,7 @@ final class ProfileHeaderView: UIView {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            //Avatar Image
+            // Avatar Image
             avatarImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             avatarImageView.topAnchor.constraint(equalTo: topAnchor, constant: 16),
             avatarImageView.widthAnchor.constraint(equalToConstant: 100),
@@ -138,12 +154,17 @@ final class ProfileHeaderView: UIView {
             statusTextField.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
             statusTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             statusTextField.heightAnchor.constraint(equalToConstant: 40),
-            
         ])
     }
     
+    private func setupGestureRecognizers() {
+        avatarImageView.isUserInteractionEnabled = true
+        
+        let avatarTap = UITapGestureRecognizer(target: self, action: #selector(avatarTapped))
+        avatarImageView.addGestureRecognizer(avatarTap)
+    }
 
-    
+
     @objc private func buttonPressed() {
         statusLabel.text = statusText.isEmpty ? "No status" : statusText
         statusTextField.text = ""
@@ -155,4 +176,5 @@ final class ProfileHeaderView: UIView {
         statusText = textField.text ?? ""
     }
     
+
 }

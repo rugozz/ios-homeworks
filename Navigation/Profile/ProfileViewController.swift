@@ -9,6 +9,12 @@ import UIKit
 
 
 final class ProfileViewController: UIViewController {
+    
+    private var animatingAvatar: UIImageView?
+    private var overlayView: UIView?
+    private var closeButton: UIButton?
+    private var originalAvatarFrame: CGRect = .zero
+    
     // MARK: - UI Components
     
     private lazy var tableView: UITableView = {
@@ -23,6 +29,7 @@ final class ProfileViewController: UIViewController {
         return tableView
     }()
     
+
     // MARK: - Properties
     
     private let posts: [Post2] = [
@@ -61,13 +68,15 @@ final class ProfileViewController: UIViewController {
 
     
     // MARK: - Lifecycle
+
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupNavigationBar()
     }
-    
+
     // MARK: - Setup
     
     private func setupUI() {
@@ -138,7 +147,9 @@ extension ProfileViewController: UITableViewDataSource {
 extension ProfileViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         guard section == 0 else { return nil }
-        return ProfileHeaderView()
+        let headerView = ProfileHeaderView()
+        headerView.delegate = self
+        return headerView
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         guard section == 0 else { return 0 }
@@ -165,6 +176,7 @@ extension ProfileViewController: UITableViewDelegate {
     }
 }
 
+
 // MARK: - PhotosTableViewCellDelegate
 extension ProfileViewController: PhotosTableViewCellDelegate {
     func photosTableViewCellDidTap(_ cell: PhotosTableViewCell) {
@@ -172,4 +184,93 @@ extension ProfileViewController: PhotosTableViewCellDelegate {
         navigationController?.pushViewController(galleryVC, animated: true)
     }
 
+}
+
+extension ProfileViewController: ProfileHeaderViewDelegate {
+    func didTapAvatar(_ avatarImageView: UIImageView) {
+        // Получаем frame относительно окна, а не view
+        guard let window = view.window else { return }
+        originalAvatarFrame = avatarImageView.convert(avatarImageView.bounds, to: window)
+        
+        // Создаем новое окно для анимации
+        let animatingAvatar = UIImageView(image: avatarImageView.image)
+        animatingAvatar.contentMode = .scaleAspectFill
+        animatingAvatar.clipsToBounds = true
+        animatingAvatar.layer.cornerRadius = avatarImageView.layer.cornerRadius
+        animatingAvatar.frame = originalAvatarFrame
+        window.addSubview(animatingAvatar)
+        self.animatingAvatar = animatingAvatar
+        
+        // Overlay на все окно
+        let overlay = UIView(frame: window.bounds)
+        overlay.backgroundColor = .black
+        overlay.alpha = 0
+        window.insertSubview(overlay, belowSubview: animatingAvatar)
+        self.overlayView = overlay
+        
+        // Рассчитываем размер с учетом safeArea
+        let safeWidth = window.bounds.width - 40
+        let aspectRatio = avatarImageView.bounds.height / avatarImageView.bounds.width
+        let targetHeight = safeWidth * aspectRatio
+        let targetY = (window.bounds.height - targetHeight) / 2
+        
+        UIView.animate(withDuration: 0.5, animations: {
+            animatingAvatar.frame = CGRect(
+                x: 20,
+                y: targetY,
+                width: safeWidth,
+                height: targetHeight
+            )
+            animatingAvatar.layer.cornerRadius = 0
+            overlay.alpha = 0.7
+        }) { _ in
+            self.addCloseButton(to: window)
+        }
+    }
+    
+    private func addCloseButton(to window: UIWindow) {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "xmark"), for: .normal)
+        button.tintColor = .white
+        button.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+        button.layer.cornerRadius = 20
+        button.alpha = 0
+        button.frame = CGRect(
+            x: window.bounds.width - 60,
+            y: window.safeAreaInsets.top + 20,
+            width: 40,
+            height: 40
+        )
+        button.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
+        window.addSubview(button)
+        self.closeButton = button
+        
+        UIView.animate(withDuration: 0.3) {
+            button.alpha = 1
+        }
+    }
+    
+    @objc private func closeButtonTapped() {
+        guard let window = view.window,
+              let animatingAvatar = animatingAvatar,
+              let overlay = overlayView else { return }
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            self.closeButton?.alpha = 0
+        }) { _ in
+            self.closeButton?.removeFromSuperview()
+            
+            UIView.animate(withDuration: 0.5, animations: {
+                animatingAvatar.frame = self.originalAvatarFrame
+                animatingAvatar.layer.cornerRadius = self.originalAvatarFrame.width / 2
+                overlay.alpha = 0
+            }) { _ in
+                animatingAvatar.removeFromSuperview()
+                overlay.removeFromSuperview()
+                self.animatingAvatar = nil
+                self.overlayView = nil
+                self.closeButton = nil
+            }
+        }
+    }
 }

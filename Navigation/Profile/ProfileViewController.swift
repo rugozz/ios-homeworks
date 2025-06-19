@@ -7,6 +7,7 @@
 
 import UIKit
 
+
 final class ProfileViewController: UIViewController {
     // MARK: - UI Components
     
@@ -14,6 +15,7 @@ final class ProfileViewController: UIViewController {
         let tableView = UITableView(frame: .zero, style: .grouped)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: PostTableViewCell.identifier)
+        tableView.register(PhotosTableViewCell.self, forCellReuseIdentifier: PhotosTableViewCell.identifier)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.separatorStyle = .none
@@ -70,8 +72,6 @@ final class ProfileViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        navigationController?.navigationBar.prefersLargeTitles = true
-        
         view.addSubview(tableView)
         
         NSLayoutConstraint.activate([
@@ -84,6 +84,12 @@ final class ProfileViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = false
+        title = "Профиль"
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
     }
 }
 
@@ -91,25 +97,42 @@ final class ProfileViewController: UIViewController {
 
 extension ProfileViewController: UITableViewDataSource {
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
+        return 2
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return posts.count
+        switch section {
+        case 0: return 1
+        case 1: return posts.count
+        default: return 0
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: PostTableViewCell.identifier, for: indexPath)
-                as? PostTableViewCell else {
-            return UITableViewCell()
+        switch indexPath.section {
+        case 0:
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: PhotosTableViewCell.identifier,
+                for: indexPath
+            ) as! PhotosTableViewCell
+            cell.selectionStyle = .none
+            cell.delegate = self
+            return cell
+            
+        case 1:
+            let cell = tableView.dequeueReusableCell(
+                withIdentifier: PostTableViewCell.identifier,
+                for: indexPath
+            ) as! PostTableViewCell
+            cell.configure(with: posts[indexPath.row])
+            cell.selectionStyle = .none
+            return cell
+            
+        default:
+            fatalError("Unexpected section index")
         }
-        
-        let post = posts[indexPath.row]
-        cell.configure(with: post)
-        return cell
     }
 }
-
 // MARK: - UITableViewDelegate
 
 extension ProfileViewController: UITableViewDelegate {
@@ -122,9 +145,31 @@ extension ProfileViewController: UITableViewDelegate {
         return 220
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+        switch indexPath.section {
+        case 0: return 160
+        case 1: return UITableView.automaticDimension
+        default: return 0
+        }
     }
+        
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 400
+        switch indexPath.section {
+        case 0: return 120
+        case 1: return 400
+        default: return 0
+        }
     }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+// MARK: - PhotosTableViewCellDelegate
+extension ProfileViewController: PhotosTableViewCellDelegate {
+    func photosTableViewCellDidTap(_ cell: PhotosTableViewCell) {
+        let galleryVC = PhotoViewController()
+        navigationController?.pushViewController(galleryVC, animated: true)
+    }
+
 }

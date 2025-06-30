@@ -7,6 +7,6 @@
 
 import Foundation
 
-struct Post {
+public struct Post {
     let title: String
 }

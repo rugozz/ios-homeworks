@@ -75,6 +75,14 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupNavigationBar()
+        
+        #if DEBUG
+
+        view.backgroundColor = .systemRed
+        #else
+
+        view.backgroundColor = .systemBackground
+        #endif
     }
 
     // MARK: - Setup

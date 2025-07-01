@@ -9,10 +9,18 @@
 /* Begin PBXBuildFile section */
 		B4829CEE2E12F795004E297C /* StorageService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4829CE62E12F795004E297C /* StorageService.framework */; };
 		B4829CEF2E12F795004E297C /* StorageService.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B4829CE62E12F795004E297C /* StorageService.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B4829D6A2E144C40004E297C /* StorageService.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4829CE62E12F795004E297C /* StorageService.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		B4829CEC2E12F795004E297C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B449A4252DDCF8C4009FC9AD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B4829CE52E12F795004E297C;
+			remoteInfo = StorageService;
+		};
+		B4829D6B2E144C40004E297C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B449A4252DDCF8C4009FC9AD /* Project object */;
 			proxyType = 1;
@@ -51,7 +59,7 @@
 		B4829CF42E12F795004E297C /* Exceptions for "StorageService" folder in "StorageService" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Post.swift,
+				ViewController.swift,
 			);
 			publicHeaders = (
 				StorageService.h,
@@ -61,7 +69,7 @@
 		B4829CF52E12F7D2004E297C /* Exceptions for "StorageService" folder in "Navigation" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Post.swift,
+				ViewController.swift,
 			);
 			target = B449A42C2DDCF8C4009FC9AD /* Navigation */;
 		};
@@ -92,6 +100,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4829D6A2E144C40004E297C /* StorageService.framework in Frameworks */,
 				B4829CEE2E12F795004E297C /* StorageService.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -111,6 +120,7 @@
 			children = (
 				B449A42F2DDCF8C4009FC9AD /* Navigation */,
 				B4829CE72E12F795004E297C /* StorageService */,
+				B4829D692E144C40004E297C /* Frameworks */,
 				B449A42E2DDCF8C4009FC9AD /* Products */,
 			);
 			sourceTree = "<group>";
@@ -122,6 +132,13 @@
 				B4829CE62E12F795004E297C /* StorageService.framework */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B4829D692E144C40004E297C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -150,6 +167,7 @@
 			);
 			dependencies = (
 				B4829CED2E12F795004E297C /* PBXTargetDependency */,
+				B4829D6C2E144C40004E297C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B449A42F2DDCF8C4009FC9AD /* Navigation */,
@@ -261,6 +279,11 @@
 			isa = PBXTargetDependency;
 			target = B4829CE52E12F795004E297C /* StorageService */;
 			targetProxy = B4829CEC2E12F795004E297C /* PBXContainerItemProxy */;
+		};
+		B4829D6C2E144C40004E297C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B4829CE52E12F795004E297C /* StorageService */;
+			targetProxy = B4829D6B2E144C40004E297C /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

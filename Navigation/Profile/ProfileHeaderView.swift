@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 protocol ProfileHeaderViewDelegate: AnyObject {
     func didTapAvatar(_ avatarImageView: UIImageView)
@@ -91,7 +92,7 @@ final class ProfileHeaderView: UIView {
         super.layoutSubviews()
             avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
     }
-    
+
     private func setupView() {
         addSubview(avatarImageView)
         addSubview(fullNameLabel)
@@ -125,36 +126,36 @@ final class ProfileHeaderView: UIView {
     }
     
     private func setupConstraints() {
-        NSLayoutConstraint.activate([
-            // Avatar Image
-            avatarImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            avatarImageView.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            avatarImageView.widthAnchor.constraint(equalToConstant: 100),
-            avatarImageView.heightAnchor.constraint(equalTo: avatarImageView.widthAnchor),
-            
-            //Full Name
-            fullNameLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            fullNameLabel.topAnchor.constraint(equalTo: topAnchor, constant: 27),
-            fullNameLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            fullNameLabel.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -20),
-            
-            //Button
-            setStatusButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            setStatusButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            setStatusButton.topAnchor.constraint(equalTo: statusTextField.bottomAnchor, constant: 6),
-            setStatusButton.heightAnchor.constraint(equalToConstant: 50),
-            
-            //Status
-            statusLabel.leadingAnchor.constraint(equalTo: avatarImageView.trailingAnchor, constant: 35),
-            statusLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            statusLabel.topAnchor.constraint(equalTo: fullNameLabel.bottomAnchor, constant: 34),
-            
-            //Status TextField
-            statusTextField.leadingAnchor.constraint(equalTo: statusLabel.leadingAnchor),
-            statusTextField.topAnchor.constraint(equalTo: statusLabel.bottomAnchor, constant: 8),
-            statusTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            statusTextField.heightAnchor.constraint(equalToConstant: 40),
-        ])
+        avatarImageView.snp.makeConstraints { make in
+            make.leading.top.equalToSuperview().offset(16)
+            make.width.height.equalTo(100)
+        }
+        
+        fullNameLabel.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.top.equalToSuperview().offset(27)
+            make.trailing.equalToSuperview().offset(-16)
+            make.bottom.lessThanOrEqualToSuperview().offset(-20)
+        }
+        
+        statusLabel.snp.makeConstraints { make in
+            make.leading.equalTo(avatarImageView.snp.trailing).offset(35)
+            make.trailing.equalToSuperview().offset(-16)
+            make.top.equalTo(fullNameLabel.snp.bottom).offset(34)
+        }
+        
+        statusTextField.snp.makeConstraints { make in
+            make.leading.equalTo(statusLabel)
+            make.top.equalTo(statusLabel.snp.bottom).offset(8)
+            make.trailing.equalToSuperview().offset(-16)
+            make.height.equalTo(40)
+        }
+        
+        setStatusButton.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.equalTo(statusTextField.snp.bottom).offset(6)
+            make.height.equalTo(50)
+        }
     }
     
     private func setupGestureRecognizers() {

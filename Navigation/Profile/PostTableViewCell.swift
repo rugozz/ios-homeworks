@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import iOSIntPackage
 
 final class PostTableViewCell: UITableViewCell {
     
     static let identifier = "PostTableViewCell"
+    private let imageProcessor = ImageProcessor()
     
     // MARK: UI Components
     private let authorLabel: UILabel = {
@@ -72,10 +74,31 @@ final class PostTableViewCell: UITableViewCell {
     // MARK: - Configuration
     func configure(with post: Post2) {
         authorLabel.text = post.author
-        postImageView.image = UIImage(named: post.image)
+        //postImageView.image = UIImage(named: post.image)
         descriptionLabel.text = post.description
         likesLabel.text = "Likes: \(post.likes)"
         viewsLabel.text = "Views: \(post.views)"
+        
+        // Применяем фильтр к изображению
+        if let originalImage = UIImage(named: post.image) {
+            // Выбираем случайный фильтр для демонстрации
+            let randomFilter: ColorFilter = [
+                .noir, .posterize, .colorInvert, .chrome, .fade,
+                .process, .transfer, .sepia(intensity: 0.8)
+            ].randomElement() ?? .noir
+            
+            // Обрабатываем изображение в фоновом потоке
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                self?.imageProcessor.processImage(
+                    sourceImage: originalImage,
+                    filter: randomFilter
+                ) { processedImage in
+                    DispatchQueue.main.async {
+                        self?.postImageView.image = processedImage
+                    }
+                }
+            }
+        }
     }
     
     //MARK: - Setup

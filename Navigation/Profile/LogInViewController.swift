@@ -19,7 +19,9 @@ extension UIImage {
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
-
+    // Делегат для проверки логина/пароля
+    var loginDelegate: LoginViewControllerDelegate?
+    
     // Обновляем свойство userService с условием компиляции
     private var userService: UserService {
         #if DEBUG
@@ -167,28 +169,37 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        // Получаем пользователя через сервис
-        if let user = userService.getUser(by: login) {
-            // Успешная авторизация - переходим на экран профиля
-            let profileVC = ProfileViewController()
-            profileVC.user = user // Передаем пользователя
+        guard let delegate = loginDelegate else {
+            showAlert(message: "Ошибка инициализации")
+            return
+        }
+        
+        let isValidCredentials = delegate.check(login: login, password: password)
+        
+        if isValidCredentials {
+            // Если логин/пароль верные, получаем информацию о пользователе
             
-            // Добавляем информацию о типе сервиса для отладки
-            #if DEBUG
-            print("DEBUG: Используется TestUserService")
-            profileVC.debugInfo = "Debug сборка - Тестовый пользователь"
-            #else
-            print("RELEASE: Используется CurrentUserService")
-            profileVC.debugInfo = "Release сборка - Продакшен пользователь"
-            #endif
-            
-            navigationController?.pushViewController(profileVC, animated: true)
-        } else {
-            // Неверный логин
-            showAlert(message: "Неверный логин или пароль")
+            if let user = userService.getUser(by: login) {
+                // Успешная авторизация - переходим на экран профиля
+                let profileVC = ProfileViewController()
+                profileVC.user = user // Передаем пользователя
+                
+                // Добавляем информацию о типе сервиса для отладки
+#if DEBUG
+                print("DEBUG: Используется TestUserService")
+                profileVC.debugInfo = "Debug сборка - Тестовый пользователь"
+#else
+                print("RELEASE: Используется CurrentUserService")
+                profileVC.debugInfo = "Release сборка - Продакшен пользователь"
+#endif
+                
+                navigationController?.pushViewController(profileVC, animated: true)
+            } else {
+                // Неверный логин
+                showAlert(message: "Неверный логин или пароль")
+            }
         }
     }
-    
     private func showAlert(message: String) {
         let alert = UIAlertController(
             title: "Ошибка",

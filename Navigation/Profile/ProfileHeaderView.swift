@@ -178,3 +178,11 @@ final class ProfileHeaderView: UIView {
     
 
 }
+
+extension ProfileHeaderView {
+    func configure(with user: User) {
+        fullNameLabel.text = user.fullName
+        statusLabel.text = user.status
+        avatarImageView.image = user.avatar ?? UIImage(systemName: "person.circle.fill")
+    }
+}

@@ -19,6 +19,23 @@ extension UIImage {
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
+
+    // Обновляем свойство userService с условием компиляции
+    private var userService: UserService {
+        #if DEBUG
+        // В Debug схеме используем TestUserService
+        return TestUserService()
+        #else
+        // В Release схеме используем CurrentUserService
+        let releaseUser = User(
+            login: "admin",
+            fullName: "Иван Иванов",
+            avatar: UIImage(named: "avatar_placeholder"),
+            status: "В сети"
+        )
+        return CurrentUserService(user: releaseUser)
+        #endif
+    }
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
@@ -140,8 +157,46 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     
 
     @objc private func loginButtonTapped() {
-        let profileVC = ProfileViewController()
-        navigationController?.pushViewController(profileVC, animated: true)
+        guard let login = loginTextField.text, !login.isEmpty else {
+            showAlert(message: "Введите логин")
+            return
+        }
+        
+        guard let password = passwordTextField.text, !password.isEmpty else {
+            showAlert(message: "Введите пароль")
+            return
+        }
+        
+        // Получаем пользователя через сервис
+        if let user = userService.getUser(by: login) {
+            // Успешная авторизация - переходим на экран профиля
+            let profileVC = ProfileViewController()
+            profileVC.user = user // Передаем пользователя
+            
+            // Добавляем информацию о типе сервиса для отладки
+            #if DEBUG
+            print("DEBUG: Используется TestUserService")
+            profileVC.debugInfo = "Debug сборка - Тестовый пользователь"
+            #else
+            print("RELEASE: Используется CurrentUserService")
+            profileVC.debugInfo = "Release сборка - Продакшен пользователь"
+            #endif
+            
+            navigationController?.pushViewController(profileVC, animated: true)
+        } else {
+            // Неверный логин
+            showAlert(message: "Неверный логин или пароль")
+        }
+    }
+    
+    private func showAlert(message: String) {
+        let alert = UIAlertController(
+            title: "Ошибка",
+            message: message,
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     private func setupView() {

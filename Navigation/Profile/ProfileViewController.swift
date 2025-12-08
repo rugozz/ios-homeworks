@@ -10,6 +10,9 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
     
+    var user: User?
+    var debugInfo: String = ""
+    
     private var animatingAvatar: UIImageView?
     private var overlayView: UIView?
     private var closeButton: UIButton?
@@ -27,6 +30,17 @@ final class ProfileViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
         return tableView
+    }()
+    
+    // Добавляем label для отладочной информации
+    private let debugLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = .systemRed
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
     }()
     
 
@@ -75,14 +89,13 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupNavigationBar()
-        
-        #if DEBUG
-
-        view.backgroundColor = .systemRed
-        #else
-
-        view.backgroundColor = .systemBackground
-        #endif
+        setupDebugInfo()
+                
+                #if DEBUG
+                view.backgroundColor = .systemRed.withAlphaComponent(0.1) // Легкий красный фон для Debug
+                #else
+                view.backgroundColor = .systemBackground
+                #endif
     }
 
     // MARK: - Setup
@@ -90,8 +103,14 @@ final class ProfileViewController: UIViewController {
     private func setupUI() {
         view.backgroundColor = .systemBackground
         view.addSubview(tableView)
+        view.addSubview(debugLabel)
         
         NSLayoutConstraint.activate([
+            // Debug label
+            debugLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            debugLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            debugLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            // TableView
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -101,7 +120,22 @@ final class ProfileViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationController?.navigationBar.prefersLargeTitles = false
-        title = "Профиль"
+       
+        // Устанавливаем имя пользователя в заголовок с индикатором сборки
+        #if DEBUG
+        title = "\(user?.fullName ?? "Профиль") [DEBUG]"
+        #else
+        title = user?.fullName ?? "Профиль"
+        #endif
+    }
+    
+    private func setupDebugInfo() {
+        #if DEBUG
+        debugLabel.text = debugInfo
+        debugLabel.isHidden = false
+        #else
+        debugLabel.isHidden = true
+        #endif
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -157,6 +191,12 @@ extension ProfileViewController: UITableViewDelegate {
         guard section == 0 else { return nil }
         let headerView = ProfileHeaderView()
         headerView.delegate = self
+        
+        // Настраиваем header с информацией о пользователе
+        if let user = user {
+            headerView.configure(with: user)
+        }
+        
         return headerView
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {

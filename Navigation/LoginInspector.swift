@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct LoginInspector: LoginViewControllerDelegate {
+class LoginInspector: LoginViewControllerDelegate {
     
     // Реализация метода протокола
     func check(login: String, password: String) -> Bool {

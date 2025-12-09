@@ -33,8 +33,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Создаем LogInViewController и настраиваем делегат
         let loginViewController = LogInViewController()
         
-        // Создаем LoginInspector и назначаем его делегатом
-        let loginInspector = LoginInspector()
+        // Используем фабрику для создания LoginInspector
+        let loginFactory = MyLoginFactory()
+        let loginInspector = loginFactory.makeLoginInspector()
+        
         loginViewController.loginDelegate = loginInspector
         
         // Настраиваем UserService для loginViewController
@@ -42,7 +44,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let userService = TestUserService()
         #else
         let releaseUser = User(
-            login: "admin", // Логин должен совпадать с Checker.shared
+            login: "admin", 
             fullName: "Иван Иванов",
             avatar: UIImage(named: "avatar_placeholder"),
             status: "В сети"

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+
 // Расширение для изменения прозрачности UIImage
 extension UIImage {
     func withAlpha(_ alpha: CGFloat) -> UIImage? {
@@ -19,8 +20,10 @@ extension UIImage {
 
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
-
-    // Обновляем свойство userService с условием компиляции
+    // Делегат для проверки логина/пароля
+    weak var loginDelegate: LoginViewControllerDelegate?
+    
+    // Фабрика для создания UserService
     private var userService: UserService {
         #if DEBUG
         // В Debug схеме используем TestUserService
@@ -30,25 +33,24 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let releaseUser = User(
             login: "admin",
             fullName: "Иван Иванов",
-            avatar: UIImage(named: "avatar_placeholder"),
+            avatar: UIImage(named: "avatar_placeholder") ?? UIImage(systemName: "person.circle.fill"),
             status: "В сети"
         )
         return CurrentUserService(user: releaseUser)
         #endif
     }
+    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.keyboardDismissMode = .interactive
         return scrollView
-        
     }()
     
     private let contentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
-        
     }()
 
     private let logoImageView: UIImageView = {
@@ -70,6 +72,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         textField.textColor = .black
         textField.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textField.autocapitalizationType = .none
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 0))
+        textField.leftViewMode = .always
         return textField
     }()
     
@@ -81,9 +85,12 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         textField.isSecureTextEntry = true
         textField.returnKeyType = .done
         textField.backgroundColor = .systemGray6
+        textField.textColor = .black
+        textField.font = UIFont.systemFont(ofSize: 16, weight: .regular)
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 0))
+        textField.leftViewMode = .always
         return textField
     }()
-    
     
     private let enterView2: UIView = {
         let view = UIView()
@@ -102,7 +109,6 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.clipsToBounds = true
         return button
-        
     }()
     
     private let stackView: UIStackView = {
@@ -115,28 +121,73 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         return stackView
     }()
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
         
         setupView()
         setupConstraints()
         configureLoginButton()
+        setupTextFieldDelegates()
         
+        // Отладочная информация
+        #if DEBUG
+        print("LogInViewController: Загружен в режиме DEBUG")
+        #else
+        print("LogInViewController: Загружен в режиме RELEASE")
+        #endif
+    }
+    
+    // MARK: - Setup
+    
+    private func setupView() {
+        view.backgroundColor = .white
+        
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(logoImageView)
+        contentView.addSubview(loginButton)
+        contentView.addSubview(stackView)
+        contentView.addSubview(enterView2)
+        
+        stackView.axis = .vertical
+        stackView.spacing = 0
+        stackView.alignment = .fill
+        stackView.distribution = .fillEqually
+        
+        stackView.addArrangedSubview(loginTextField)
+        stackView.addArrangedSubview(passwordTextField)
+    }
+    
+    private func setupTextFieldDelegates() {
         loginTextField.delegate = self
         passwordTextField.delegate = self
+        
+        // Добавляем кнопку "Done" для закрытия клавиатуры
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let flexSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(dismissKeyboard))
+        toolbar.items = [flexSpace, doneButton]
+        
+        loginTextField.inputAccessoryView = toolbar
+        passwordTextField.inputAccessoryView = toolbar
     }
     
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        return true
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
-    // Метод для настройки кнопки
     private func configureLoginButton() {
         guard let normalImage = UIImage(named: "blue_pixel") else {
-            print("Warning")
+            print("Warning: Изображение blue_pixel не найдено")
+            // Устанавливаем цвет фона как fallback
+            loginButton.backgroundColor = .systemBlue
+            loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
             return
         }
+        
         // Создаем растягиваемые версии изображений
         let resizableNormal = normalImage.resizableImage(
             withCapInsets: UIEdgeInsets.zero,
@@ -151,13 +202,17 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         // Устанавливаем изображения для разных состояний
         loginButton.setBackgroundImage(resizableNormal, for: .normal)
         loginButton.setBackgroundImage(resizableHighlighted, for: .highlighted)
+        loginButton.setBackgroundImage(resizableHighlighted, for: .selected)
+        loginButton.setBackgroundImage(resizableHighlighted, for: .disabled)
 
         loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
     }
     
-
+    // MARK: - Actions
+    
     @objc private func loginButtonTapped() {
-        guard let login = loginTextField.text, !login.isEmpty else {
+        guard let login = loginTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !login.isEmpty else {
             showAlert(message: "Введите логин")
             return
         }
@@ -167,11 +222,43 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        // Получаем пользователя через сервис
+        // Валидация длины пароля
+        if password.count < 3 {
+            showAlert(message: "Пароль должен содержать не менее 3 символов")
+            return
+        }
+        
+        guard let delegate = loginDelegate else {
+            showAlert(message: "Ошибка инициализации системы авторизации")
+            return
+        }
+        
+        // Отображаем индикатор загрузки
+        loginButton.isEnabled = false
+        loginButton.alpha = 0.7
+        
+        // Проверяем логин и пароль через делегата
+        let isValidCredentials = delegate.check(login: login, password: password)
+        
+        // Имитируем задержку для UX
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.loginButton.isEnabled = true
+            self.loginButton.alpha = 1.0
+            
+            if isValidCredentials {
+                self.handleSuccessfulLogin(login: login)
+            } else {
+                self.showAlert(message: "Неверный логин или пароль")
+            }
+        }
+    }
+    
+    private func handleSuccessfulLogin(login: String) {
+        // Получаем информацию о пользователе через UserService
         if let user = userService.getUser(by: login) {
             // Успешная авторизация - переходим на экран профиля
             let profileVC = ProfileViewController()
-            profileVC.user = user // Передаем пользователя
+            profileVC.user = user
             
             // Добавляем информацию о типе сервиса для отладки
             #if DEBUG
@@ -184,14 +271,18 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             
             navigationController?.pushViewController(profileVC, animated: true)
         } else {
-            // Неверный логин
-            showAlert(message: "Неверный логин или пароль")
+            // Пользователь не найден в системе (хотя логин/пароль верные)
+            #if DEBUG
+            showAlert(message: "DEBUG: Пользователь найден, но не получен из UserService")
+            #else
+            showAlert(message: "Ошибка получения данных пользователя")
+            #endif
         }
     }
     
     private func showAlert(message: String) {
         let alert = UIAlertController(
-            title: "Ошибка",
+            title: "Внимание",
             message: message,
             preferredStyle: .alert
         )
@@ -199,53 +290,85 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         present(alert, animated: true)
     }
     
-    private func setupView() {
-        view.backgroundColor = .white
-        
-        view.addSubview(scrollView)
-        
-        scrollView.addSubview(contentView)
-        contentView.addSubview(logoImageView)
-        contentView.addSubview(loginButton)
-        contentView.addSubview(stackView)
-        contentView.addSubview(enterView2)
-        
-        stackView.axis = .vertical
-        stackView.spacing = 0
-        stackView.alignment = .leading
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.addArrangedSubview(loginTextField)
-        stackView.addArrangedSubview(passwordTextField)
-
-
-    }
+    // MARK: - Keyboard Handling
     
     override func viewWillAppear(_ animated: Bool) {
-            super.viewWillAppear(animated)
-            navigationController?.setNavigationBarHidden(true, animated: animated)
-            setupKeyboardObservers()
-        }
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: animated)
+        setupKeyboardObservers()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        removeKeyboardObservers()
+    }
+    
+    @objc private func willShowKeyboard(_ notification: NSNotification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
+        let keyboardHeight = keyboardFrame.cgRectValue.height
         
-        override func viewWillDisappear(_ animated: Bool) {
-            super.viewWillDisappear(animated)
-            
-            removeKeyboardObservers()
-        }
+        let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        scrollView.contentInset = contentInsets
+        scrollView.verticalScrollIndicatorInsets = contentInsets
         
-        // MARK: - Actions
-        
-        @objc func willShowKeyboard(_ notification: NSNotification) {
-            guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue else { return }
-                    let keyboardHeight = keyboardFrame.cgRectValue.height
-                    scrollView.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight, right: 0)
-                    scrollView.verticalScrollIndicatorInsets = scrollView.contentInset
-            
+        // Прокручиваем к активному полю ввода
+        if let activeTextField = findActiveTextField() {
+            let rect = activeTextField.convert(activeTextField.bounds, to: scrollView)
+            scrollView.scrollRectToVisible(rect, animated: true)
         }
-        
-        @objc func willHideKeyboard(_ notification: NSNotification) {
-            scrollView.contentInset = .zero
-            scrollView.verticalScrollIndicatorInsets = .zero
+    }
+    
+    @objc private func willHideKeyboard(_ notification: NSNotification) {
+        scrollView.contentInset = .zero
+        scrollView.verticalScrollIndicatorInsets = .zero
+    }
+    
+    private func findActiveTextField() -> UITextField? {
+        if loginTextField.isFirstResponder {
+            return loginTextField
+        } else if passwordTextField.isFirstResponder {
+            return passwordTextField
         }
+        return nil
+    }
+    
+    private func setupKeyboardObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(willShowKeyboard(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(willHideKeyboard(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
+    }
+    
+    private func removeKeyboardObservers() {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    // MARK: - UITextFieldDelegate
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == loginTextField {
+            passwordTextField.becomeFirstResponder()
+        } else if textField == passwordTextField {
+            textField.resignFirstResponder()
+            loginButtonTapped()
+        }
+        return true
+    }
+    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        return true
+    }
+    
+    // MARK: - Constraints
     
     private func setupConstraints() {
         // Констрейнты для ScrollView
@@ -262,7 +385,8 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.heightAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.heightAnchor)
         ])
         
         // Констрейнты для элементов
@@ -273,23 +397,13 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             logoImageView.widthAnchor.constraint(equalToConstant: 100),
             logoImageView.heightAnchor.constraint(equalToConstant: 100),
             
+            // StackView с полями ввода
             stackView.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 120),
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             stackView.heightAnchor.constraint(equalToConstant: 100),
-            // Поле логина
-            loginTextField.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 120),
-            loginTextField.leadingAnchor.constraint(equalTo: stackView.leadingAnchor, constant: 16),
-            loginTextField.trailingAnchor.constraint(equalTo: stackView.trailingAnchor, constant: -16),
-            loginTextField.heightAnchor.constraint(equalToConstant: 50),
             
-            // Поле пароля
-            passwordTextField.topAnchor.constraint(equalTo: loginTextField.bottomAnchor),
-            passwordTextField.leadingAnchor.constraint(equalTo: loginTextField.leadingAnchor),
-            passwordTextField.trailingAnchor.constraint(equalTo: loginTextField.trailingAnchor),
-            passwordTextField.heightAnchor.constraint(equalToConstant: 50),
-            
-            // Разделение между логином и паролем
+            // Разделитель между полями
             enterView2.topAnchor.constraint(equalTo: stackView.topAnchor, constant: 50),
             enterView2.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
             enterView2.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
@@ -304,27 +418,18 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         ])
     }
     
-    private func setupKeyboardObservers() {
-            let notificationCenter = NotificationCenter.default
-            
-            notificationCenter.addObserver(
-                self,
-                selector: #selector(self.willShowKeyboard(_:)),
-                name: UIResponder.keyboardWillShowNotification,
-                object: nil
-            )
-            
-            notificationCenter.addObserver(
-                self,
-                selector: #selector(self.willHideKeyboard(_:)),
-                name: UIResponder.keyboardWillHideNotification,
-                object: nil
-            )
-        }
-        
-        private func removeKeyboardObservers() {
-            let notificationCenter = NotificationCenter.default
-            notificationCenter.removeObserver(self)
-        }
+    // MARK: - Cleanup
+    
+    deinit {
+        removeKeyboardObservers()
     }
+}
 
+// MARK: - Login Info Extension
+
+extension LogInViewController {
+    func setLoginCredentials(login: String, password: String) {
+        loginTextField.text = login
+        passwordTextField.text = password
+    }
+}

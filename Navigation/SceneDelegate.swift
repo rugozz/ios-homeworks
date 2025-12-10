@@ -11,15 +11,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         
-        guard let scence = (scene as? UIWindowScene) else { return }
+        guard let scene = (scene as? UIWindowScene) else { return }
         
-        let window = UIWindow(windowScene: scence)
+        let window = UIWindow(windowScene: scene)
         
         let tabBarController = UITabBarController()
         
+        // Создаем FeedViewController
         let feedViewController = FeedViewController()
         feedViewController.title = "Лента"
         
@@ -30,20 +30,56 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             image: UIImage(systemName: "list.bullet"),
             tag: 0)
         
-        
-        //let profileViewController = ProfileViewController()
-        //profileViewController.title = "Профиль"
+        // Создаем LogInViewController и настраиваем делегат
         let loginViewController = LogInViewController()
+        
+        // Используем фабрику для создания LoginInspector
+        let loginFactory = MyLoginFactory()
+        let loginInspector = loginFactory.makeLoginInspector()
+        
+        loginViewController.loginDelegate = loginInspector
+        
+        // Настраиваем UserService для loginViewController
+        #if DEBUG
+        let userService = TestUserService()
+        #else
+        let releaseUser = User(
+            login: "admin", 
+            fullName: "Иван Иванов",
+            avatar: UIImage(named: "avatar_placeholder"),
+            status: "В сети"
+        )
+        let userService = CurrentUserService(user: releaseUser)
+        #endif
+        
+        // Если в LogInViewController есть свойство userService
+        // loginViewController.userService = userService
         
         let profileNavController = UINavigationController(rootViewController: loginViewController)
         
-        profileNavController.tabBarItem = UITabBarItem(title: "Профиль",
-                                                       image: UIImage(systemName: "person"),
-                                                       tag: 1)
+        profileNavController.tabBarItem = UITabBarItem(
+            title: "Профиль",
+            image: UIImage(systemName: "person"),
+            tag: 1
+        )
         
+        // Скрываем навигационную панель в профиле для красоты
+        profileNavController.navigationBar.isHidden = true
         
+        // Настраиваем TabBarController
         tabBarController.viewControllers = [feedNavController, profileNavController]
         
+        // Настраиваем внешний вид TabBar
+        if #available(iOS 15.0, *) {
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = .systemBackground
+            
+            tabBarController.tabBar.standardAppearance = appearance
+            tabBarController.tabBar.scrollEdgeAppearance = appearance
+        }
+        
+        // Настраиваем окно
         window.rootViewController = tabBarController
         window.makeKeyAndVisible()
         
@@ -77,7 +113,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
     }
-
-
 }
-

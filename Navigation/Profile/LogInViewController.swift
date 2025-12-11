@@ -21,7 +21,7 @@ extension UIImage {
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
     // Делегат для проверки логина/пароля
-    weak var loginDelegate: LoginViewControllerDelegate?
+    var loginDelegate: LoginViewControllerDelegate?
     
     // Фабрика для создания UserService
     private var userService: UserService {

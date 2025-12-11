@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import iOSIntPackage
 
 final class PhotoViewController: UIViewController {
     
@@ -19,6 +20,9 @@ final class PhotoViewController: UIViewController {
         "nine", "ten", "eleven", "twelve", "thirteen", "fourteen",
         "fithteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"
     ]
+    
+    // ImagePublisherFacade из пакета
+    private let imagePublisher = ImagePublisherFacade()
     
     // MARK: - UI Components
     private lazy var collectionView: UICollectionView = {
@@ -38,20 +42,23 @@ final class PhotoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        loadPhotos()
+        setupNavigationBar()
+        setupImagePublisher()
+        loadInitialPhotos()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        startLoadingImages()
         navigationController?.setNavigationBarHidden(false, animated: animated)
-        
-        setupNavigationBar()
-
     }
+    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        cancelSubscription()
         navigationController?.setNavigationBarHidden(true, animated: animated)
     }
+    
     // MARK: - Setup
     private func setupUI() {
         title = "Photo Gallery"
@@ -69,14 +76,72 @@ final class PhotoViewController: UIViewController {
     }
     
     private func setupNavigationBar() {
-        title = "Photo Gallery"
         navigationController?.navigationBar.prefersLargeTitles = false
         navigationItem.largeTitleDisplayMode = .never
     }
     
-    private func loadPhotos() {
-        photos = photoNames.compactMap { UIImage(named: $0) }
+    private func loadInitialPhotos() {
+        // Загружаем начальные фото из ресурсов
+        let initialPhotos = photoNames.compactMap { UIImage(named: $0) }
+        photos = initialPhotos
         collectionView.reloadData()
+    }
+    
+    private func setupImagePublisher() {
+        // Подписываем текущий контроллер на обновления изображений
+        imagePublisher.subscribe(self)
+        print("✅ PhotoViewController подписан на ImagePublisherFacade")
+    }
+    
+    private func startLoadingImages() {
+        // Создаем массив с нашими фото для передачи в метод
+        let userImages = photoNames.compactMap { UIImage(named: $0) }
+        
+        // Правильный вызов метода с использованием наших фото
+        imagePublisher.addImagesWithTimer(
+            time: 0.7,
+            repeat: 18,
+            userImages: userImages
+        )
+        
+        print("Запущена загрузка изображений с интервалом 0.7 секунд")
+        print("Используется \(userImages.count) пользовательских изображений")
+    }
+    
+    private func cancelSubscription() {
+        // Отменяем подписку при уходе с экрана
+        imagePublisher.removeSubscription(for: self)
+        print("🛑 Подписка на ImagePublisher отменена")
+    }
+}
+
+// MARK: - ImageLibrarySubscriber
+extension PhotoViewController: ImageLibrarySubscriber {
+    func receive(images: [UIImage]) {
+
+        self.photos = images
+        
+        // Обновляем UI на главном потоке
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+            
+            // Прокручиваем к последнему добавленному изображению
+            if !images.isEmpty {
+                let lastIndex = IndexPath(item: images.count - 1, section: 0)
+                self.collectionView.scrollToItem(at: lastIndex, at: .bottom, animated: true)
+            }
+            
+            print("📱 Получено \(images.count) изображений")
+            
+            // Показываем прогресс в заголовке
+            self.title = "Photo Gallery (\(images.count)/18)"
+            
+            // Когда все загружено
+            if images.count >= 18 {
+                print("✅ Все изображения загружены")
+                self.title = "Photo Gallery"
+            }
+        }
     }
 }
 
@@ -114,6 +179,7 @@ final class PhotoCell: UICollectionViewCell {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
+        iv.layer.cornerRadius = 8
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -136,5 +202,10 @@ final class PhotoCell: UICollectionViewCell {
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        imageView.image = nil
     }
 }

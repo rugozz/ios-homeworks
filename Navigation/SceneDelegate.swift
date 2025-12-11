@@ -53,7 +53,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         #endif
         
         // Если в LogInViewController есть свойство userService
-        // loginViewController.userService = userService
+        //loginViewController.userService = userService
         
         let profileNavController = UINavigationController(rootViewController: loginViewController)
         

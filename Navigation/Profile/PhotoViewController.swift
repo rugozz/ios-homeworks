@@ -118,30 +118,11 @@ final class PhotoViewController: UIViewController {
 // MARK: - ImageLibrarySubscriber
 extension PhotoViewController: ImageLibrarySubscriber {
     func receive(images: [UIImage]) {
-
-        self.photos = images
+        photos = images
+        collectionView.reloadData()
         
-        // Обновляем UI на главном потоке
-        DispatchQueue.main.async {
-            self.collectionView.reloadData()
-            
-            // Прокручиваем к последнему добавленному изображению
-            if !images.isEmpty {
-                let lastIndex = IndexPath(item: images.count - 1, section: 0)
-                self.collectionView.scrollToItem(at: lastIndex, at: .bottom, animated: true)
-            }
-            
-            print("📱 Получено \(images.count) изображений")
-            
-            // Показываем прогресс в заголовке
-            self.title = "Photo Gallery (\(images.count)/18)"
-            
-            // Когда все загружено
-            if images.count >= 18 {
-                print("✅ Все изображения загружены")
-                self.title = "Photo Gallery"
-            }
-        }
+        let item = IndexPath(item: images.count - 1, section: 0)
+        collectionView.scrollToItem(at: item, at: .bottom, animated: true)
     }
 }
 

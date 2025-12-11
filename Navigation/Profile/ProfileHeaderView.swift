@@ -34,19 +34,13 @@ final class ProfileHeaderView: UIView {
         return imageView
     }()
     
-    private let setStatusButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Show status", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.layer.cornerRadius = 4
-        button.layer.shadowOffset = CGSize(width: 4, height: 4)
-        button.layer.shadowRadius = 4
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOpacity = 0.7
-        button.backgroundColor = .systemBlue
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
+    // Заменяем UIButton на CustomButton
+    private let setStatusButton = CustomButton(
+        title: "Show status",
+        titleColor: .white,
+        backgroundColor: .systemBlue,
+        cornerRadius: 4
+    )
     
     private let statusLabel: UILabel = {
         let label = UILabel()
@@ -90,6 +84,12 @@ final class ProfileHeaderView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
             avatarImageView.layer.cornerRadius = avatarImageView.frame.width / 2
+        
+        // Добавляем тень для кнопки после layout
+        setStatusButton.layer.shadowOffset = CGSize(width: 4, height: 4)
+        setStatusButton.layer.shadowRadius = 4
+        setStatusButton.layer.shadowColor = UIColor.black.cgColor
+        setStatusButton.layer.shadowOpacity = 0.7
     }
     
     private func setupView() {
@@ -115,9 +115,10 @@ final class ProfileHeaderView: UIView {
     }
     
     private func setupButtonAction() {
-        setStatusButton.addTarget(self,
-                                   action: #selector(buttonPressed),
-                                   for: .touchUpInside)
+        // Устанавливаем действие для CustomButton
+        setStatusButton.setAction { [weak self] in
+            self?.buttonPressed()
+        }
         
         statusTextField.addTarget(self,
                                   action: #selector(statusTextChanged(_:)),

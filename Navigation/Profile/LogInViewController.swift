@@ -213,6 +213,26 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     }
     
     // MARK: - Actions
+    private func handleSuccessfulLogin(login: String) {
+        // Создаем ViewModel через фабрику
+        let viewModel = ProfileViewModelFactory.createProfileViewModel(for: login)
+        
+        // Создаем ProfileViewController с ViewModel
+        let profileVC = ProfileViewController(viewModel: viewModel)
+        
+        // Добавляем информацию о типе сервиса для отладки
+        #if DEBUG
+        print("DEBUG: Используется TestUserService")
+
+        if let user = userService.getUser(by: login) {
+            print("Пользователь: \(user.fullName)")
+        }
+        #else
+        print("RELEASE: Используется CurrentUserService")
+        #endif
+        
+        navigationController?.pushViewController(profileVC, animated: true)
+    }
     @objc private func loginButtonTapped() {
         guard let login = loginTextField.text, !login.isEmpty else {
             showAlert(message: "Введите логин")
@@ -232,13 +252,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         let isValidCredentials = delegate.check(login: login, password: password)
         
         if isValidCredentials {
-            if let user = userService.getUser(by: login) {
-                let profileVC = ProfileViewController()
-                profileVC.user = user
-                navigationController?.pushViewController(profileVC, animated: true)
-            } else {
-                showAlert(message: "Неверный логин или пароль")
-            }
+            handleSuccessfulLogin(login: login)
         } else {
             showAlert(message: "Неверный логин или пароль")
         }

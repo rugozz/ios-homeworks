@@ -9,20 +9,15 @@ import UIKit
 
 // Класс TestUserService для тестовых данных в Debug схеме
 class TestUserService: UserService {
-    private let testUser: User
-    
-    init() {
-        // Создаем тестового пользователя с другими данными
-        self.testUser = User(
-            login: "test",
-            fullName: "Тестовый Пользователь",
-            avatar: UIImage(systemName: "testtube.2"), // Иконка для тестового режима
+    func getUser(by login: String) -> User? {
+        // В тестовом режиме возвращаем пользователя с введенным логином
+        guard !login.isEmpty else { return nil }
+        
+        return User(
+            login: login,
+            fullName: "Тестовый Пользователь (\(login))",
+            avatar: UIImage(systemName: "testtube.2"),
             status: "Тестовый режим"
         )
-    }
-    
-    func getUser(by login: String) -> User? {
-        // В тестовом режиме возвращаем тестового пользователя для любого непустого логина
-        return !login.isEmpty ? testUser : nil
     }
 }

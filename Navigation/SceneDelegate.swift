@@ -39,22 +39,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         loginViewController.loginDelegate = loginInspector
         
-        // Настраиваем UserService для loginViewController
-        #if DEBUG
-        let userService = TestUserService()
-        #else
-        let releaseUser = User(
-            login: "admin", 
-            fullName: "Иван Иванов",
-            avatar: UIImage(named: "avatar_placeholder"),
-            status: "В сети"
-        )
-        let userService = CurrentUserService(user: releaseUser)
-        #endif
-        
-        // Если в LogInViewController есть свойство userService
-        //loginViewController.userService = userService
-        
         let profileNavController = UINavigationController(rootViewController: loginViewController)
         
         profileNavController.tabBarItem = UITabBarItem(
@@ -85,6 +69,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         self.window = window
     }
+    
 
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.

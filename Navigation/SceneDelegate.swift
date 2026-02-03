@@ -19,39 +19,43 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let tabBarController = UITabBarController()
         
-        // Создаем FeedViewController
+        // 1. FeedViewController
         let feedViewController = FeedViewController()
         feedViewController.title = "Лента"
-        
         let feedNavController = UINavigationController(rootViewController: feedViewController)
-        
         feedNavController.tabBarItem = UITabBarItem(
             title: "Лента",
             image: UIImage(systemName: "list.bullet"),
-            tag: 0)
+            tag: 0
+        )
         
-        // Создаем LogInViewController и настраиваем делегат
+        // 2. LogInViewController
         let loginViewController = LogInViewController()
-        
-        // Используем фабрику для создания LoginInspector
         let loginFactory = MyLoginFactory()
         let loginInspector = loginFactory.makeLoginInspector()
-        
         loginViewController.loginDelegate = loginInspector
         
         let profileNavController = UINavigationController(rootViewController: loginViewController)
-        
         profileNavController.tabBarItem = UITabBarItem(
             title: "Профиль",
             image: UIImage(systemName: "person"),
             tag: 1
         )
-        
-        // Скрываем навигационную панель в профиле для красоты
         profileNavController.navigationBar.isHidden = true
         
+        // 3. MapViewController (ПРОГРАММНЫЙ)
+        let mapViewController = MapViewController() // Просто создаем экземпляр
+        mapViewController.title = "Карта"
+        
+        let mapNavController = UINavigationController(rootViewController: mapViewController)
+        mapNavController.tabBarItem = UITabBarItem(
+            title: "Карта",
+            image: UIImage(systemName: "map"), // Важно: "map" с маленькой буквы
+            selectedImage: UIImage(systemName: "map.fill")
+        )
+        
         // Настраиваем TabBarController
-        tabBarController.viewControllers = [feedNavController, profileNavController]
+        tabBarController.viewControllers = [feedNavController, profileNavController, mapNavController]
         
         // Настраиваем внешний вид TabBar
         if #available(iOS 15.0, *) {
@@ -63,22 +67,30 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             tabBarController.tabBar.scrollEdgeAppearance = appearance
         }
         
+        // Настраиваем цвет иконок
+        tabBarController.tabBar.tintColor = .systemBlue
+        tabBarController.tabBar.unselectedItemTintColor = .gray
+        
         // Настраиваем окно
         window.rootViewController = tabBarController
         window.makeKeyAndVisible()
         
         self.window = window
         
-        // 1. Рандомная инициализация конфигурации
+        // Выводим информацию для отладки
+        print("✅ TabBarController создан")
+        print("Количество табов: \(tabBarController.viewControllers?.count ?? 0)")
+        
+        // Network request (как у вас было)
         let appConfiguration = AppConfiguration.random
         print("\n Задание: Случайная конфигурация")
         print("Выбрана: \(appConfiguration.description)")
         
-        // 2. Передаем конфигурацию в сетевой сервис
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             NetworkService.request(for: appConfiguration)
         }
     }
+}
     
 
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -108,4 +120,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
     }
-}
+

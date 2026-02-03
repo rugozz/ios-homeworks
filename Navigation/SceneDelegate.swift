@@ -68,6 +68,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         
         self.window = window
+        
+        // 1. Рандомная инициализация конфигурации
+        let appConfiguration = AppConfiguration.random
+        print("\n Задание: Случайная конфигурация")
+        print("Выбрана: \(appConfiguration.description)")
+        
+        // 2. Передаем конфигурацию в сетевой сервис
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            NetworkService.request(for: appConfiguration)
+        }
     }
     
 

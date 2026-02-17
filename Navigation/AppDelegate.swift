@@ -13,10 +13,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+       
+        // Настройка внешнего вида
+        configureAppearance()
+        
+        // Настройка уведомлений
+        setupNotifications()
         return true
     }
+    // MARK: - Private Methods
+    private func configureAppearance() {
+        // Настройка Navigation Bar
+        UINavigationBar.appearance().tintColor = .systemBlue
+        UINavigationBar.appearance().titleTextAttributes = [
+            .font: UIFont.systemFont(ofSize: 18, weight: .semibold)
+        ]
+    }
 
+    private func setupNotifications() {
+        // Запрос на отправку уведомлений о последних обновлениях
+        LocalNotificationsService.shared.registeForLatesUpdatesIfPossible()
+        
+        // Подписка на уведомление о открытии через нотификацию
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleOpenUpdatesNotification),
+            name: NSNotification.Name("OpenUpdatesScreen"),
+            object: nil
+        )
+    }
+
+    @objc private func handleOpenUpdatesNotification() {
+        // Обработка открытия приложения через уведомление
+        // Например, можно открыть экран с обновлениями
+        print("Открытие экрана с обновлениями")
+        
+        // Здесь можно добавить логику для навигации на экран обновлений
+        // Например, через координатор или NotificationCenter
+    }
+    
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {

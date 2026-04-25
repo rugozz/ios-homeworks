@@ -8,5 +8,6 @@
 import Foundation
 
 protocol LoginViewControllerDelegate: AnyObject {
-    func check(login: String, password: String) -> Bool
+    func checkCredentials(email: String, password: String)
+    func signUp(email: String, password: String)
 }

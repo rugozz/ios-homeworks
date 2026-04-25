@@ -18,7 +18,6 @@ extension UIImage {
     }
 }
 
-
 class LogInViewController: UIViewController, UITextFieldDelegate {
 
     // Делегат для проверки логина/пароля
@@ -65,15 +64,16 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     private let loginTextField: UITextField = {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = "Email or Phone"
+        textField.placeholder = "Email"
         textField.layer.cornerRadius = 10
         textField.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        textField.keyboardType = .default
+        textField.keyboardType = .emailAddress
         textField.returnKeyType = .next
         textField.backgroundColor = .systemGray6
         textField.textColor = .black
         textField.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textField.autocapitalizationType = .none
+        textField.autocorrectionType = .no
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 10, height: 0))
         textField.leftViewMode = .always
         return textField
@@ -102,15 +102,37 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         return view
     }()
     
-    // Используем CustomButton вместо UIButton
+    // Кнопка входа
     private let loginButton: UIButton = {
-        let button = CustomButton(
-            title: "Log In",
-            titleColor: .white,
-            backgroundColor: .systemBlue,
-            cornerRadius: 10
-        )
+        let button = UIButton(type: .system)
+        button.setTitle("Log In", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .systemBlue
+        button.layer.cornerRadius = 10
+        button.translatesAutoresizingMaskIntoConstraints = false
         return button
+    }()
+    
+    // Кнопка регистрации
+    private let signUpButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Sign Up", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .systemGreen
+        button.layer.cornerRadius = 10
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
+    // StackView для кнопок (горизонтальный)
+    private let buttonsStackView: UIStackView = {
+        let stackView = UIStackView()
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.spacing = 16
+        stackView.alignment = .fill
+        stackView.distribution = .fillEqually
+        return stackView
     }()
     
     private let stackView: UIStackView = {
@@ -135,7 +157,7 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         setupView()
         setupConstraints()
-        configureLoginButton()
+        configureButtons()
         setupTextFieldDelegates()
     }
     
@@ -165,14 +187,18 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
         
         contentView.addSubview(logoImageView)
         contentView.addSubview(stackView)
-        contentView.addSubview(loginButton)
-
+        contentView.addSubview(buttonsStackView)
+        
+        // Добавляем кнопки в горизонтальный StackView
+        buttonsStackView.addArrangedSubview(loginButton)
+        buttonsStackView.addArrangedSubview(signUpButton)
+        
         stackView.addArrangedSubview(loginTextField)
         stackView.addArrangedSubview(separatorView)
         stackView.addArrangedSubview(passwordTextField)
         
         separatorView.heightAnchor.constraint(equalToConstant: 0.5).isActive = true
-
+        
         loginTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
         passwordTextField.heightAnchor.constraint(equalToConstant: 50).isActive = true
     }
@@ -180,62 +206,27 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
     private func setupTextFieldDelegates() {
         loginTextField.delegate = self
         passwordTextField.delegate = self
+        
+        // Добавляем отслеживание изменений для кнопок
+        loginTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
+        passwordTextField.addTarget(self, action: #selector(textFieldDidChange), for: .editingChanged)
     }
     
-    private func configureLoginButton() {
-        // Устанавливаем действие через CustomButton
-        if let customButton = loginButton as? CustomButton {
-            customButton.setAction { [weak self] in
-                self?.loginButtonTapped()
-            }
-        } else {
-            // Fallback на стандартный UIButton
-            loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
-        }
+    private func configureButtons() {
+        // Настройка кнопки входа
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         
-        // Настраиваем фоновое изображение
-        if let normalImage = UIImage(named: "blue_pixel") {
-            let resizableNormal = normalImage.resizableImage(
-                withCapInsets: UIEdgeInsets.zero,
-                resizingMode: .stretch
-            )
-            
-            let resizableHighlighted = normalImage.withAlpha(0.8)?.resizableImage(
-                withCapInsets: UIEdgeInsets.zero,
-                resizingMode: .stretch
-            )
-            
-            loginButton.setBackgroundImage(resizableNormal, for: .normal)
-            loginButton.setBackgroundImage(resizableHighlighted, for: .highlighted)
-        } else {
-            loginButton.backgroundColor = .systemBlue
-        }
+        // Настройка кнопки регистрации
+        signUpButton.addTarget(self, action: #selector(signUpButtonTapped), for: .touchUpInside)
+        
+        // Начальное состояние кнопок
+        updateButtonsState()
     }
     
     // MARK: - Actions
-    private func handleSuccessfulLogin(login: String) {
-        // Создаем ViewModel через фабрику
-        let viewModel = ProfileViewModelFactory.createProfileViewModel(for: login)
-        
-        // Создаем ProfileViewController с ViewModel
-        let profileVC = ProfileViewController(viewModel: viewModel)
-        
-        // Добавляем информацию о типе сервиса для отладки
-        #if DEBUG
-        print("DEBUG: Используется TestUserService")
-
-        if let user = userService.getUser(by: login) {
-            print("Пользователь: \(user.fullName)")
-        }
-        #else
-        print("RELEASE: Используется CurrentUserService")
-        #endif
-        
-        navigationController?.pushViewController(profileVC, animated: true)
-    }
     @objc private func loginButtonTapped() {
-        guard let login = loginTextField.text, !login.isEmpty else {
-            showAlert(message: "Введите логин")
+        guard let email = loginTextField.text, !email.isEmpty else {
+            showAlert(message: "Введите email")
             return
         }
         
@@ -249,22 +240,110 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             return
         }
         
-        let isValidCredentials = delegate.check(login: login, password: password)
+        // Блокируем кнопки во время запроса
+        setButtonsEnabled(false)
         
-        if isValidCredentials {
-            handleSuccessfulLogin(login: login)
-        } else {
-            showAlert(message: "Неверный логин или пароль")
+        // Вызываем проверку через делегат (LoginInspector)
+        delegate.checkCredentials(email: email, password: password)
+    }
+    
+    @objc private func signUpButtonTapped() {
+        guard let email = loginTextField.text, !email.isEmpty else {
+            showAlert(message: "Введите email")
+            return
         }
+        
+        guard let password = passwordTextField.text, !password.isEmpty else {
+            showAlert(message: "Введите пароль")
+            return
+        }
+        
+        // Валидация пароля
+        guard password.count >= 6 else {
+            showAlert(message: "Пароль должен содержать минимум 6 символов")
+            return
+        }
+        
+        guard let delegate = loginDelegate else {
+            showAlert(message: "Ошибка инициализации системы авторизации")
+            return
+        }
+        
+        // Блокируем кнопки во время запроса
+        setButtonsEnabled(false)
+        
+        // Вызываем регистрацию через делегат
+        delegate.signUp(email: email, password: password)
+    }
+    
+    // Метод для успешного входа/регистрации
+    func handleSuccessfulLogin(login: String) {
+        // Разблокируем кнопки
+        setButtonsEnabled(true)
+        
+        // Получаем информацию о пользователе для отладки
+        #if DEBUG
+        print("DEBUG: Используется TestUserService")
+        if let user = userService.getUser(by: login) {
+            print("Пользователь: \(user.fullName)")
+        }
+        #else
+        print("RELEASE: Используется CurrentUserService")
+        #endif
+        
+        // Создаем ViewModel для ProfileViewController
+        let profileViewModel = ProfileViewModel(userService: userService, login: login)
+        
+        // Создаем ProfileViewController с ViewModel
+        let profileVC = ProfileViewController(viewModel: profileViewModel)
+        
+        // Обновляем TabBar для показа профиля
+        if let tabBarController = self.tabBarController,
+           let navController = tabBarController.viewControllers?[1] as? UINavigationController {
+            // Заменяем текущий view controller на ProfileViewController
+            navController.setViewControllers([profileVC], animated: true)
+            profileVC.navigationItem.hidesBackButton = true
+            // Показываем TabBar
+            profileVC.hidesBottomBarWhenPushed = false
+        } else {
+            // Fallback если не в TabBar
+            navigationController?.pushViewController(profileVC, animated: true)
+        }
+    }
+    
+    @objc private func textFieldDidChange() {
+        updateButtonsState()
+    }
+    
+    private func updateButtonsState() {
+        let isEmailEmpty = loginTextField.text?.isEmpty ?? true
+        let isPasswordEmpty = passwordTextField.text?.isEmpty ?? true
+        let isValid = !isEmailEmpty && !isPasswordEmpty
+        
+        loginButton.isEnabled = isValid
+        loginButton.alpha = isValid ? 1.0 : 0.5
+        
+        signUpButton.isEnabled = isValid
+        signUpButton.alpha = isValid ? 1.0 : 0.5
+    }
+    
+    private func setButtonsEnabled(_ enabled: Bool) {
+        loginButton.isEnabled = enabled
+        signUpButton.isEnabled = enabled
+        loginButton.alpha = enabled ? 1.0 : 0.5
+        signUpButton.alpha = enabled ? 1.0 : 0.5
     }
     
     private func showAlert(message: String) {
         let alert = UIAlertController(
-            title: "Ошибка",
+            title: "Внимание",
             message: message,
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+            // Разблокируем кнопки после закрытия алерта
+            self?.setButtonsEnabled(true)
+        })
         present(alert, animated: true)
     }
     
@@ -344,15 +423,15 @@ class LogInViewController: UIViewController, UITextFieldDelegate {
             stackView.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 120),
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            stackView.heightAnchor.constraint(equalToConstant: 100.5) // 50 + 0.5 + 50
+            stackView.heightAnchor.constraint(equalToConstant: 100.5)
         ])
-
+        
         NSLayoutConstraint.activate([
-            loginButton.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 16),
-            loginButton.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            loginButton.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            loginButton.heightAnchor.constraint(equalToConstant: 50),
-            loginButton.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -16)
+            buttonsStackView.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 16),
+            buttonsStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            buttonsStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+            buttonsStackView.heightAnchor.constraint(equalToConstant: 50),
+            buttonsStackView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -16)
         ])
     }
 }
@@ -364,11 +443,12 @@ extension NSLayoutConstraint {
         return self
     }
 }
-// MARK: - Login Info Extension
 
+// MARK: - Login Info Extension
 extension LogInViewController {
     func setLoginCredentials(login: String, password: String) {
         loginTextField.text = login
         passwordTextField.text = password
+        updateButtonsState()
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -19,6 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Настройка уведомлений
         setupNotifications()
+        
+        FirebaseApp.configure()
         return true
     }
     // MARK: - Private Methods

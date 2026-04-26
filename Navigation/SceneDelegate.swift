@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -31,8 +32,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // 2. LogInViewController
         let loginViewController = LogInViewController()
+        
+        // Создаем инспектор через фабрику
         let loginFactory = MyLoginFactory()
         let loginInspector = loginFactory.makeLoginInspector()
+        
+        // Устанавливаем ViewController в инспектор
+        if let inspector = loginInspector as? LoginInspector {
+            inspector.setViewController(loginViewController)
+        }
+        
         loginViewController.loginDelegate = loginInspector
         
         let profileNavController = UINavigationController(rootViewController: loginViewController)
@@ -43,14 +52,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         profileNavController.navigationBar.isHidden = true
         
-        // 3. MapViewController (ПРОГРАММНЫЙ)
-        let mapViewController = MapViewController() // Просто создаем экземпляр
+        // 3. MapViewController
+        let mapViewController = MapViewController()
         mapViewController.title = "Карта"
         
         let mapNavController = UINavigationController(rootViewController: mapViewController)
         mapNavController.tabBarItem = UITabBarItem(
             title: "Карта",
-            image: UIImage(systemName: "map"), // Важно: "map" с маленькой буквы
+            image: UIImage(systemName: "map"),
             selectedImage: UIImage(systemName: "map.fill")
         )
         
@@ -77,17 +86,34 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         self.window = window
         
-        // Выводим информацию для отладки
         print("✅ TabBarController создан")
-        print("Количество табов: \(tabBarController.viewControllers?.count ?? 0)")
         
-        // Network request (как у вас было)
+        // Network request
         let appConfiguration = AppConfiguration.random
-        print("\n Задание: Случайная конфигурация")
+        print("\nЗадание: Случайная конфигурация")
         print("Выбрана: \(appConfiguration.description)")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             NetworkService.request(for: appConfiguration)
+        }
+    }
+    
+    func sceneDidDisconnect(_ scene: UIScene) {
+        signOutUser()
+    }
+    
+    func sceneWillTerminate(_ scene: UIScene) {
+        signOutUser()
+    }
+    
+    private func signOutUser() {
+        do {
+            try Auth.auth().signOut()
+            UserDefaults.standard.removeObject(forKey: "currentUserEmail")
+            UserDefaults.standard.removeObject(forKey: "currentUserName")
+            print("Пользователь успешно разлогинен")
+        } catch {
+            print("Ошибка при разлогине: \(error.localizedDescription)")
         }
     }
 }

@@ -9,6 +9,6 @@ import Foundation
 
 struct MyLoginFactory: LoginFactory {
     func makeLoginInspector() -> LoginViewControllerDelegate {
-        return LoginInspector()
+        return LoginInspector(checkerService: CheckerService.shared)
     }
 }

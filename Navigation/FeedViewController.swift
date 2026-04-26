@@ -28,6 +28,7 @@ class FeedViewController: UIViewController {
         setupUI()
         setupActions()
         setupFeedModel()
+        setupDoubleTapGesture()
     }
     
     private func setupUI() {
@@ -102,6 +103,37 @@ class FeedViewController: UIViewController {
                     self?.checkButton.isEnabled = false
                 }
             }
+        }
+    }
+    
+    private func setupDoubleTapGesture() {
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        doubleTap.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTap)
+    }
+
+    @objc private func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+        // Используем демо-пост, но в вашем проекте нужно брать текущий пост из ленты
+        let currentPost = demoPost
+        
+        if !CoreDataManager.shared.isPostSaved(currentPost) {
+            CoreDataManager.shared.savePost(currentPost)
+            
+            let alert = UIAlertController(
+                title: "❤️ Сохранено",
+                message: "Пост \"\(currentPost.title)\" добавлен в избранное",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
+        } else {
+            let alert = UIAlertController(
+                title: "Уже в избранном",
+                message: "Этот пост уже сохранен",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true)
         }
     }
     

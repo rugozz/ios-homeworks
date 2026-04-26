@@ -23,7 +23,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         FirebaseApp.configure()
         return true
+        
+        // Инициализация Core Data
+        _ = CoreDataManager.shared.persistentContainer
+        
+        configureAppearance()
+        setupNotifications()
+        FirebaseApp.configure()
+        return true
     }
+    
     // MARK: - Private Methods
     private func configureAppearance() {
         // Настройка Navigation Bar

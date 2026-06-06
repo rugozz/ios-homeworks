@@ -63,8 +63,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             selectedImage: UIImage(systemName: "map.fill")
         )
         
-        // Настраиваем TabBarController
-        tabBarController.viewControllers = [feedNavController, profileNavController, mapNavController]
+        // 4. SavedPostsViewController (новая вкладка)
+        let savedVC = SavedPostsViewController()
+        let savedNavController = UINavigationController(rootViewController: savedVC)
+        savedNavController.tabBarItem = UITabBarItem(
+            title: "Избранное",
+            image: UIImage(systemName: "heart"),
+            selectedImage: UIImage(systemName: "heart.fill")
+        )
+        
+        // Настраиваем TabBarController со всеми 4 вкладками
+        tabBarController.viewControllers = [feedNavController, profileNavController, mapNavController, savedNavController]
         
         // Настраиваем внешний вид TabBar
         if #available(iOS 15.0, *) {
